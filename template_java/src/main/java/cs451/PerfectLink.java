@@ -69,11 +69,11 @@ public class PerfectLink {
     }
 
     public void stop() {
-        this.pp2pSender.setStopped(true);
-        this.pp2pReceiver.setStopped(true);
+        this.pp2pSender.setStoppingCriterion(true);
+        this.pp2pReceiver.setStoppingCriterion(true);
     }
 
-    public void send(String payload, int destination) {
+    public void addMessage(String payload, int destination) {
         int increment = atomicInteger.getAndIncrement();
         messageList.add(new Message(increment, Type.MSG, processId, destination, payload));
     }

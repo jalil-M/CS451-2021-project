@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 public class Pp2pSender implements Runnable {
 
-    private boolean stopped = false;
     private final List<Message> messageList;
+    private boolean stoppingCriterion = false;
     private final DatagramSocket datagramSocket;
     private final ConcurrentSkipListSet<String> ack;
     private final HashMap<Integer, InetSocketAddress> addresses;
@@ -24,11 +24,12 @@ public class Pp2pSender implements Runnable {
         this.datagramSocket = datagramSocket;
     }
 
-    public void setStopped(boolean stopped) {
-        this.stopped = stopped;
+    public void setStoppingCriterion(boolean stoppingCriterion) {
+        this.stoppingCriterion = stoppingCriterion;
     }
 
-    private void send(Message message) throws IOException {
+    // sending process with java net
+    private void toMessage(Message message) throws IOException {
         byte[] buffer = message.formatMessage().getBytes();
         DatagramPacket datagramPacket = new DatagramPacket(
                 buffer, buffer.length, addresses.get(message.header.getDestination())
@@ -38,16 +39,16 @@ public class Pp2pSender implements Runnable {
 
     @Override
     public void run() {
-        while (!stopped) {
+        while (!stoppingCriterion) {
             for (Message message : messageList) {
                 String element = String.format(
                         Constants.REGEX_SOURCE_DESTINATION,
                         message.header.getDestination(),
                         message.header.getMessageId()
                 );
-                if (!stopped && !ack.contains(element)) {
+                if (!stoppingCriterion && !ack.contains(element)) {
                     try {
-                        send(message);
+                        toMessage(message);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

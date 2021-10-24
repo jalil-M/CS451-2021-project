@@ -9,8 +9,8 @@ public class Message {
         this.header = new Header(messageId, messageType, source, destination);
     }
 
-    public Message(int messageId, Type type, int source, int destination, String payload) {
-        this.header = new Header(messageId, type, source, destination);
+    public Message(int messageId, Type messageType, int source, int destination, String payload) {
+        this.header = new Header(messageId, messageType, source, destination);
         this.payload = payload;
     }
 

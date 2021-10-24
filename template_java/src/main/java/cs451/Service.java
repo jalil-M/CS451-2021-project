@@ -17,27 +17,32 @@ public class Service {
         return strings;
     }
 
-    public static PerfectLink createLink(Parser parser) throws IOException {
-        int maxMessage = 0;
-        int trackerMessage = 0;
-        int processId = parser.myId();
+    private static PerfectLink handleLink(PerfectLink perfectLink, int trackerMessage, int maxMessage) {
+        if (perfectLink.getProcessId() == maxMessage) {
+            return perfectLink;
+        }
+        for (String message: generate(0, trackerMessage)) {
+            perfectLink.addMessage(message, maxMessage);
+        }
+        return perfectLink;
+    }
+
+    private static HashMap<Integer, InetSocketAddress> getAddresses(Parser parser) {
         HashMap<Integer, InetSocketAddress> addresses = new HashMap<>();
         for (Host host: parser.hosts()) {
             InetSocketAddress address = new InetSocketAddress(
                     host.getIp(), host.getPort());
             addresses.put(host.getId(), address);
         }
+        return addresses;
+    }
+
+    public static PerfectLink createLink(Parser parser) throws IOException {
+        int processId = parser.myId();
+        HashMap<Integer, InetSocketAddress> addresses = getAddresses(parser);
         PerfectLink perfectLink = new PerfectLink(processId, addresses, parser.output());
         String[] splits = Files.readString(Path.of(parser.config())).split(Constants.SEPARATOR_CONFIG);
-        trackerMessage = Integer.parseInt(splits[0].strip());
-        maxMessage = Integer.parseInt(splits[1].strip());
-        if (perfectLink.getProcessId() == maxMessage) {
-            return perfectLink;
-        }
-        for (String message: generate(0, trackerMessage)) {
-            perfectLink.send(message, maxMessage);
-        }
-        return perfectLink;
+        return handleLink(perfectLink, Integer.parseInt(splits[0].strip()), Integer.parseInt(splits[1].strip()));
     }
 
 }

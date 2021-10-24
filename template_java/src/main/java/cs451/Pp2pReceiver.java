@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class Pp2pReceiver implements Runnable {
 
     private final int localProcess;
-    private boolean stopped = false;
+    private boolean stoppingCriterion = false;
     private final DatagramPacket datagramPacket;
     private final DatagramSocket datagramSocket;
     private final ConcurrentSkipListSet<String> ack;
@@ -31,10 +31,11 @@ public class Pp2pReceiver implements Runnable {
         this.datagramPacket = new DatagramPacket(buffer, buffer.length);
     }
 
-    public void setStopped(boolean stopped) {
-        this.stopped = stopped;
+    public void setStoppingCriterion(boolean stoppingCriterion) {
+        this.stoppingCriterion = stoppingCriterion;
     }
 
+    // sending process with java net
     private void toAck(Message message, Message ackMessage) throws IOException {
         InetSocketAddress sourceAddress = addresses.get(message.header.getSource());
         byte[] buffer = ackMessage.formatMessage().getBytes();
@@ -45,7 +46,7 @@ public class Pp2pReceiver implements Runnable {
 
     @Override
     public void run() {
-        while(!stopped) {
+        while(!stoppingCriterion) {
             try {
                 datagramSocket.receive(datagramPacket);
             } catch (IOException e) {
@@ -79,7 +80,6 @@ public class Pp2pReceiver implements Runnable {
                 );
                 this.ack.add(element);
             }
-
         }
     }
 }
