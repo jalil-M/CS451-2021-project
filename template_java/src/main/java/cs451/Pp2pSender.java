@@ -2,7 +2,6 @@ package cs451;
 
 import java.io.IOException;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -20,29 +19,16 @@ public class Pp2pSender implements Runnable {
                       DatagramSocket datagramSocket,
                       HashMap<Integer, InetSocketAddress> addresses) {
         this.ack = ack;
-        this.messageList = messageList;
         this.addresses = addresses;
+        this.messageList = messageList;
         this.datagramSocket = datagramSocket;
     }
 
-    private void send(Message message) throws IOException {
-
-        int destinationProcess = message.header.getDestination();
-        InetSocketAddress destinationAddress = addresses.get(destinationProcess);
-        byte[] buffer = message.serialize().getBytes(StandardCharsets.UTF_8);
-        DatagramPacket packet = new DatagramPacket(
-                buffer, buffer.length, destinationAddress
-        );
-        datagramSocket.send(packet);
-
-    }
-
     private boolean checkACK(Message message) {
-        Header header = message.header;
         String element = String.format(
-                "%d:%d",
-                header.getDestination(),
-                header.getMessageId()
+                Constants.REGEX_SOURCE_DESTINATION,
+                message.header.getDestination(),
+                message.header.getMessageId()
         );
         return ack.contains(element);
     }
@@ -51,13 +37,21 @@ public class Pp2pSender implements Runnable {
         this.stopped = true;
     }
 
+    private void send(Message message) throws IOException {
+        byte[] buffer = message.formatMessage().getBytes();
+        DatagramPacket datagramPacket = new DatagramPacket(
+                buffer, buffer.length, addresses.get(message.header.getDestination())
+        );
+        datagramSocket.send(datagramPacket);
+    }
+
     @Override
     public void run() {
         while (!stopped) {
-            for (Message forSend : messageList) {
-                if (!stopped && !checkACK(forSend)) {
+            for (Message message : messageList) {
+                if (!stopped && !checkACK(message)) {
                     try {
-                        send(forSend);
+                        send(message);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

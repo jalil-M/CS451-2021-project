@@ -29,39 +29,6 @@ public class Main {
         });
     }
 
-    public static String[] generate(int start, int end) {
-        String[] strings = new String[end-start];
-        for (int i = 0; i < end-start; i++) {
-            strings[i] = Integer.toString(i+start);
-        }
-        return strings;
-    }
-
-    private static PerfectLink createLink(Parser parser) throws IOException {
-        int processId = parser.myId();
-        HashMap<Integer, InetSocketAddress> addresses = new HashMap<>();
-        for (Host host: parser.hosts()) {
-            InetSocketAddress address = new InetSocketAddress(
-                    host.getIp(), host.getPort());
-            addresses.put(host.getId(), address);
-        }
-        PerfectLink perfectLink = new PerfectLink(processId, addresses, parser.output());
-        int trackerMessage = 0;
-        int maxMessage = 0;
-        String config = Files.readString(Path.of(parser.config()));
-        String[] splits = config.split(" ");
-        trackerMessage = Integer.parseInt(splits[0].strip());
-        maxMessage = Integer.parseInt(splits[1].strip());
-        if (perfectLink.getProcessId() == maxMessage) {
-            return perfectLink;
-        }
-        String[] messages = generate(0, trackerMessage);
-        for (String message: messages) {
-            perfectLink.send(message, maxMessage);
-        }
-        return perfectLink;
-    }
-
     public static void main(String[] args) throws InterruptedException, IOException {
         Parser parser = new Parser(args);
         parser.parse();
@@ -95,7 +62,7 @@ public class Main {
         System.out.println("Doing some initialization\n");
 
         System.out.println("Creating the perfect links...");
-        perfectLink = createLink(parser);
+        perfectLink = Service.createLink(parser);
 
         System.out.println("Broadcasting and delivering messages...\n");
         perfectLink.start();

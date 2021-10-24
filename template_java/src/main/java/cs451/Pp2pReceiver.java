@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -25,57 +24,48 @@ public class Pp2pReceiver implements Runnable {
                         HashMap<Integer, InetSocketAddress> addresses) {
         this.ack = ack;
         this.addresses = addresses;
-        byte[] buffer = new byte[32768]; //32kb
+        byte[] buffer = new byte[32768]; //32kb (more than sufficient for this submission)
         this.localProcess = localProcess;
         this.datagramSocket = datagramSocket;
         this.deliveredMessages = deliveredMessages;
         this.datagramPacket = new DatagramPacket(buffer, buffer.length);
     }
 
-    private void processMessage(Message message) throws IOException {
-        Header header = message.header;
-        String element = String.format(
-                "%d:%d",
-                header.getSource(),
-                header.getMessageId()
-        );
-        deliveredMessages.putIfAbsent(element, message);
-        toAck(message);
-    }
-
     private void toAck(Message message) throws IOException {
-
-        Header header = message.header;
         Message ackMessage = new Message(
-                header.getMessageId(),
+                message.header.getMessageId(),
                 Type.ACK,
                 localProcess,
-                header.getSource()
+                message.header.getSource()
         );
-
-        int sourceProcess = message.header.getSource();
-        InetSocketAddress sourceAddress = addresses.get(sourceProcess);
-
-        byte[] buffer = ackMessage.serialize().getBytes(StandardCharsets.UTF_8);
+        InetSocketAddress sourceAddress = addresses.get(message.header.getSource());
+        byte[] buffer = ackMessage.formatMessage().getBytes();
         datagramPacket.setSocketAddress(sourceAddress);
         datagramPacket.setData(buffer, 0, buffer.length);
         datagramSocket.send(datagramPacket);
     }
 
-    private void processACK(Message ack) {
-        Header header = ack.header;
-
-        String element = String.format(
-                "%d:%d",
-                header.getSource(),
-                header.getMessageId()
-        );
-
-        this.ack.add(element);
-    }
-
     public void stop() {
         this.stopped = true;
+    }
+
+    private void manageMessage(Message message) throws IOException {
+        String element = String.format(
+                Constants.REGEX_SOURCE_DESTINATION,
+                message.header.getSource(),
+                message.header.getMessageId()
+        );
+        deliveredMessages.putIfAbsent(element, message);
+        toAck(message);
+    }
+
+    private void manageACK(Message ack) {
+        String element = String.format(
+                Constants.REGEX_SOURCE_DESTINATION,
+                ack.header.getSource(),
+                ack.header.getMessageId()
+        );
+        this.ack.add(element);
     }
 
     @Override
@@ -86,21 +76,16 @@ public class Pp2pReceiver implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            String raw = new String(datagramPacket.getData(),
-                    0, datagramPacket.getLength(),
-                    StandardCharsets.UTF_8);
-
-            Message message = new Message(raw);
-
+            Message message = new Message(new String(datagramPacket.getData(),
+                    0, datagramPacket.getLength()));
             if (message.isMSG()) {
                 try {
-                    processMessage(message);
+                    manageMessage(message);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
-                processACK(message);
+                manageACK(message);
             }
 
         }

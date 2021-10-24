@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class PerfectLink {
 
-    private String output;
+    private String filePath;
     private final int processId;
     private final Pp2pSender pp2pSender;
     private final Pp2pReceiver pp2pReceiver;
@@ -37,9 +37,9 @@ public class PerfectLink {
         this.pp2pReceiver = new Pp2pReceiver(deliveredMessages, ack, processId, datagramSocket, addresses);
     }
 
-    public PerfectLink(int processId, HashMap<Integer, InetSocketAddress> addresses, String output) throws SocketException {
+    public PerfectLink(int processId, HashMap<Integer, InetSocketAddress> addresses, String filePath) throws SocketException {
         this(processId, addresses);
-        this.output = output;
+        this.filePath = filePath;
     }
 
     public int getProcessId() {
@@ -49,13 +49,6 @@ public class PerfectLink {
     public void start() {
         new Thread(this.pp2pSender).start();
         new Thread(this.pp2pReceiver).start();
-        System.out.printf("Perfect Link for Process %d \n", processId);
-    }
-
-    public void send(String payload, int destination) {
-        int increment = atomicInteger.getAndIncrement();
-        Message message = new Message(increment, Type.MSG, processId, destination, payload);
-        messageList.add(message);
     }
 
     public void stop() {
@@ -63,17 +56,23 @@ public class PerfectLink {
         this.pp2pReceiver.stop();
     }
 
+    public void send(String payload, int destination) {
+        int increment = atomicInteger.getAndIncrement();
+        messageList.add(new Message(increment, Type.MSG, processId, destination, payload));
+    }
+
     public void saveFile() {
         try {
-            FileWriter fw = new FileWriter(output);
-            BufferedWriter bw = new BufferedWriter(fw);
-            for (Message data: messageList) {
-                bw.write(data.broadcast() + "\n");
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath));
+            for (Message message: messageList) {
+                bufferedWriter.write(message.broadcast());
+                bufferedWriter.newLine();
             }
-            for (Message data: deliveredMessages.values()) {
-                bw.write(data.deliver() + "\n");
+            for (Message message: deliveredMessages.values()) {
+                bufferedWriter.write(message.deliver());
+                bufferedWriter.newLine();
             }
-            bw.close();
+            bufferedWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

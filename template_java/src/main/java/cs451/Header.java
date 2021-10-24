@@ -15,7 +15,7 @@ public class Header {
     }
 
     public Header(String text) {
-        String[] splits = text.split(":");
+        String[] splits = text.split(Constants.SEPARATOR_HEADER);
         this.messageId = Integer.parseInt(splits[0]);
         this.messageType = Type.valueOf(splits[1]);
         this.source = Integer.parseInt(splits[2]);
@@ -34,12 +34,8 @@ public class Header {
         return messageId;
     }
 
-    public boolean isMSG() {
-        return Type.MSG == messageType;
+    public Type getMessageType() {
+        return messageType;
     }
 
-    public String serialize() {
-        return String.format("%d:%s:%d:%d",
-                messageId, messageType, source, destination);
-    }
 }
