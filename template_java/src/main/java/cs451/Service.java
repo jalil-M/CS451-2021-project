@@ -37,6 +37,12 @@ public class Service {
         return addresses;
     }
 
+    /**
+     * Handles the config file (with parser) and creates the perfect link
+     * @param parser (input)
+     * @return created perfect link
+     * @throws IOException
+     */
     public static PerfectLink createLink(Parser parser) throws IOException {
         int processId = parser.myId();
         HashMap<Integer, InetSocketAddress> addresses = getAddresses(parser);

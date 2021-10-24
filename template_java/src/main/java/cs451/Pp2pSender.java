@@ -37,6 +37,9 @@ public class Pp2pSender implements Runnable {
         datagramSocket.send(datagramPacket);
     }
 
+    /**
+     * This method executes the Perfect P2P sender (sends message if ACK is not sent by receiver, respects the "no duplication" property for perfectness)
+     */
     @Override
     public void run() {
         while (!stoppingCriterion) {

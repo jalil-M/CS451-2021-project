@@ -31,10 +31,18 @@ public class Message {
                 payload);
     }
 
+    /**
+     * Handles the broadcast logging process
+     * @return text for file logs
+     */
     public String broadcast() {
         return String.format(Constants.FORMAT_BROADCAST, header.getMessageId());
     }
 
+    /**
+     * Handles the delivery logging process (unique message, to fulfill the perfectness property)
+     * @return text for file logs
+     */
     public String deliver() {
         return String.format(Constants.FORMAT_DELIVERY, header.getSource(), header.getMessageId());
     }

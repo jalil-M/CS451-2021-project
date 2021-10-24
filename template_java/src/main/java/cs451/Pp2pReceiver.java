@@ -44,6 +44,9 @@ public class Pp2pReceiver implements Runnable {
         datagramSocket.send(datagramPacket);
     }
 
+    /**
+     * This method executes the Perfect P2P receiver (sends ACK to fulfill perfectness property)
+     */
     @Override
     public void run() {
         while(!stoppingCriterion) {

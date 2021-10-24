@@ -46,6 +46,9 @@ public class PerfectLink {
         return processId;
     }
 
+    /**
+     * Saves logs in the file provided by the parser (path)
+     */
     public void saveFile() {
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath));
@@ -63,16 +66,27 @@ public class PerfectLink {
         }
     }
 
+    /**
+     * Starts the thread (java) for the sender & receiver (client/server)
+     */
     public void start() {
         new Thread(this.pp2pSender).start();
         new Thread(this.pp2pReceiver).start();
     }
 
+    /**
+     * Stops the execution for the sender & receiver
+     */
     public void stop() {
         this.pp2pSender.setStoppingCriterion(true);
         this.pp2pReceiver.setStoppingCriterion(true);
     }
 
+    /**
+     * Adds messages one at the time in the list (sending process)
+     * @param payload
+     * @param destination
+     */
     public void addMessage(String payload, int destination) {
         int increment = atomicInteger.getAndIncrement();
         messageList.add(new Message(increment, Type.MSG, processId, destination, payload));
