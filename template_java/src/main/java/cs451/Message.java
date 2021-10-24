@@ -20,21 +20,14 @@ public class Message {
         this.payload = text.substring(separator+1);
     }
 
-    public boolean isMSG() {
-        return Type.MSG == header.getMessageType();
-    }
-
-    private String formatHeader(int messageId, int source, int destination, Type messageType) {
-        return String.format(Constants.REGEX_HEADER,
-                messageId,
-                messageType,
-                source,
-                destination);
-    }
-
     public String formatMessage() {
+        String formattedHeader = String.format(Constants.REGEX_HEADER,
+                header.getMessageId(),
+                header.getMessageType(),
+                header.getSource(),
+                header.getDestination());
         return String.format(Constants.REGEX_MESSAGE,
-                formatHeader(header.getMessageId(), header.getSource(), header.getDestination(), header.getMessageType()),
+                formattedHeader,
                 payload);
     }
 

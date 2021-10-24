@@ -24,8 +24,8 @@ public class Pp2pSender implements Runnable {
         this.datagramSocket = datagramSocket;
     }
 
-    public void stop() {
-        this.stopped = true;
+    public void setStopped(boolean stopped) {
+        this.stopped = stopped;
     }
 
     private void send(Message message) throws IOException {

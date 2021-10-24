@@ -24,6 +24,11 @@ public class PerfectLink {
     private HashMap<Integer, InetSocketAddress> addresses;
     private final ConcurrentHashMap<String, Message> deliveredMessages;
 
+    public PerfectLink(int processId, HashMap<Integer, InetSocketAddress> addresses, String filePath) throws SocketException {
+        this(processId, addresses);
+        this.filePath = filePath;
+    }
+
     public PerfectLink(int processId, HashMap<Integer, InetSocketAddress> addresses) throws SocketException {
         this.processId = processId;
         this.addresses = addresses;
@@ -35,11 +40,6 @@ public class PerfectLink {
         this.datagramSocket = new DatagramSocket(port);
         this.pp2pSender = new Pp2pSender(messageList, ack, datagramSocket, addresses);
         this.pp2pReceiver = new Pp2pReceiver(deliveredMessages, ack, processId, datagramSocket, addresses);
-    }
-
-    public PerfectLink(int processId, HashMap<Integer, InetSocketAddress> addresses, String filePath) throws SocketException {
-        this(processId, addresses);
-        this.filePath = filePath;
     }
 
     public int getProcessId() {
@@ -69,8 +69,8 @@ public class PerfectLink {
     }
 
     public void stop() {
-        this.pp2pSender.stop();
-        this.pp2pReceiver.stop();
+        this.pp2pSender.setStopped(true);
+        this.pp2pReceiver.setStopped(true);
     }
 
     public void send(String payload, int destination) {

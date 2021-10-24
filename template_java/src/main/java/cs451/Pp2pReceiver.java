@@ -31,31 +31,16 @@ public class Pp2pReceiver implements Runnable {
         this.datagramPacket = new DatagramPacket(buffer, buffer.length);
     }
 
-    private void toAck(Message message) throws IOException {
-        Message ackMessage = new Message(
-                message.header.getMessageId(),
-                Type.ACK,
-                localProcess,
-                message.header.getSource()
-        );
+    public void setStopped(boolean stopped) {
+        this.stopped = stopped;
+    }
+
+    private void toAck(Message message, Message ackMessage) throws IOException {
         InetSocketAddress sourceAddress = addresses.get(message.header.getSource());
         byte[] buffer = ackMessage.formatMessage().getBytes();
         datagramPacket.setSocketAddress(sourceAddress);
         datagramPacket.setData(buffer, 0, buffer.length);
         datagramSocket.send(datagramPacket);
-    }
-
-    public void stop() {
-        this.stopped = true;
-    }
-
-    private void manageMessage(Message message, String element) throws IOException {
-        deliveredMessages.putIfAbsent(element, message);
-        toAck(message);
-    }
-
-    private void manageACK(String element) {
-        this.ack.add(element);
     }
 
     @Override
@@ -68,24 +53,31 @@ public class Pp2pReceiver implements Runnable {
             }
             Message message = new Message(new String(datagramPacket.getData(),
                     0, datagramPacket.getLength()));
-            if (message.isMSG()) {
+            if (message.header.getMessageType().equals(Type.MSG)) {
                 try {
                     String element = String.format(
                             Constants.REGEX_SOURCE_DESTINATION,
                             message.header.getSource(),
                             message.header.getMessageId()
                     );
-                    manageMessage(message, element);
+                    deliveredMessages.putIfAbsent(element, message);
+                    Message ackMessage = new Message(
+                            message.header.getMessageId(),
+                            Type.ACK,
+                            localProcess,
+                            message.header.getSource()
+                    );
+                    toAck(message, ackMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
-                String ack = String.format(
+                String element = String.format(
                         Constants.REGEX_SOURCE_DESTINATION,
                         message.header.getSource(),
                         message.header.getMessageId()
                 );
-                manageACK(ack);
+                this.ack.add(element);
             }
 
         }
