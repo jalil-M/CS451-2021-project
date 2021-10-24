@@ -46,21 +46,6 @@ public class PerfectLink {
         return processId;
     }
 
-    public void start() {
-        new Thread(this.pp2pSender).start();
-        new Thread(this.pp2pReceiver).start();
-    }
-
-    public void stop() {
-        this.pp2pSender.stop();
-        this.pp2pReceiver.stop();
-    }
-
-    public void send(String payload, int destination) {
-        int increment = atomicInteger.getAndIncrement();
-        messageList.add(new Message(increment, Type.MSG, processId, destination, payload));
-    }
-
     public void saveFile() {
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath));
@@ -77,4 +62,20 @@ public class PerfectLink {
             e.printStackTrace();
         }
     }
+
+    public void start() {
+        new Thread(this.pp2pSender).start();
+        new Thread(this.pp2pReceiver).start();
+    }
+
+    public void stop() {
+        this.pp2pSender.stop();
+        this.pp2pReceiver.stop();
+    }
+
+    public void send(String payload, int destination) {
+        int increment = atomicInteger.getAndIncrement();
+        messageList.add(new Message(increment, Type.MSG, processId, destination, payload));
+    }
+
 }

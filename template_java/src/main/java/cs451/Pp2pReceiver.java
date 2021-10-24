@@ -49,22 +49,12 @@ public class Pp2pReceiver implements Runnable {
         this.stopped = true;
     }
 
-    private void manageMessage(Message message) throws IOException {
-        String element = String.format(
-                Constants.REGEX_SOURCE_DESTINATION,
-                message.header.getSource(),
-                message.header.getMessageId()
-        );
+    private void manageMessage(Message message, String element) throws IOException {
         deliveredMessages.putIfAbsent(element, message);
         toAck(message);
     }
 
-    private void manageACK(Message ack) {
-        String element = String.format(
-                Constants.REGEX_SOURCE_DESTINATION,
-                ack.header.getSource(),
-                ack.header.getMessageId()
-        );
+    private void manageACK(String element) {
         this.ack.add(element);
     }
 
@@ -80,12 +70,22 @@ public class Pp2pReceiver implements Runnable {
                     0, datagramPacket.getLength()));
             if (message.isMSG()) {
                 try {
-                    manageMessage(message);
+                    String element = String.format(
+                            Constants.REGEX_SOURCE_DESTINATION,
+                            message.header.getSource(),
+                            message.header.getMessageId()
+                    );
+                    manageMessage(message, element);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
-                manageACK(message);
+                String ack = String.format(
+                        Constants.REGEX_SOURCE_DESTINATION,
+                        message.header.getSource(),
+                        message.header.getMessageId()
+                );
+                manageACK(ack);
             }
 
         }

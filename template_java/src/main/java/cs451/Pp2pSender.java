@@ -24,15 +24,6 @@ public class Pp2pSender implements Runnable {
         this.datagramSocket = datagramSocket;
     }
 
-    private boolean checkACK(Message message) {
-        String element = String.format(
-                Constants.REGEX_SOURCE_DESTINATION,
-                message.header.getDestination(),
-                message.header.getMessageId()
-        );
-        return ack.contains(element);
-    }
-
     public void stop() {
         this.stopped = true;
     }
@@ -49,7 +40,12 @@ public class Pp2pSender implements Runnable {
     public void run() {
         while (!stopped) {
             for (Message message : messageList) {
-                if (!stopped && !checkACK(message)) {
+                String element = String.format(
+                        Constants.REGEX_SOURCE_DESTINATION,
+                        message.header.getDestination(),
+                        message.header.getMessageId()
+                );
+                if (!stopped && !ack.contains(element)) {
                     try {
                         send(message);
                     } catch (IOException e) {
