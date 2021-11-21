@@ -1,7 +1,7 @@
 package cs451.links;
 
 import cs451.fifo.Pp2pEvents;
-import cs451.fifo.UniformReliableBroadcast;
+import cs451.fifo.FifoBroadcast;
 
 import java.net.*;
 import java.util.HashSet;
@@ -81,8 +81,8 @@ public class Sender extends Thread {
 
     @Override
     public void run(){
-        UniformReliableBroadcast uniformReliableBroadcast = UniformReliableBroadcast.getInstance(id, datagramSocket);
-        uniformReliableBroadcast.start();
+        FifoBroadcast fifoBroadcast = FifoBroadcast.getInstance(id, datagramSocket);
+        fifoBroadcast.start();
         while (msgNumber <= nbMessageToSend){
             String msg = new Message(id, msgNumber).toString();
             synchronized(receivedMessages){

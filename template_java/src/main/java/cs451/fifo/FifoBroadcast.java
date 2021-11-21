@@ -14,23 +14,34 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-public class UniformReliableBroadcast extends Thread {
+public class FifoBroadcast extends Thread {
 
     private int myId;
     private int timeout;
     private DatagramSocket datagramSocket;
-    private static UniformReliableBroadcast singleInstance = null;
+    private static FifoBroadcast singleInstance = null;
 
-    private UniformReliableBroadcast(int myId, DatagramSocket datagramSocket) {
+    private FifoBroadcast(int myId, DatagramSocket datagramSocket) {
         this.myId = myId;
         this.timeout = 100;
         this.datagramSocket = datagramSocket;
     }
 
-    public static UniformReliableBroadcast getInstance(int myId, DatagramSocket datagramSocket) {
+    public static FifoBroadcast getInstance(int myId, DatagramSocket datagramSocket) {
         if (singleInstance == null)
-            singleInstance = new UniformReliableBroadcast(myId, datagramSocket);
+            singleInstance = new FifoBroadcast(myId, datagramSocket);
         return singleInstance;
+    }
+
+    private void handleBroadcast(List<String> entryValue, int msgNumber, List<String> toDeliver, Set<String> toRemove) {
+        for (String message : entryValue){
+            if (msgNumber == Integer.parseInt(message.split(Constants.MSG)[1])) {
+                toDeliver.add(message);
+                msgNumber += 1;
+            } else {
+                toRemove.remove(message);
+            }
+        }
     }
 
     /**
@@ -43,11 +54,11 @@ public class UniformReliableBroadcast extends Thread {
         try {
             synchronized (object) {
                 while (true) {
-                    Set<String> toRemove = new HashSet<String>();
+                    Set<String> toRemove = new HashSet<>();
                     synchronized (Sender.receivedMessages) {
                         Sender.receivedMessages.entrySet().parallelStream().forEach(entry -> {
                             String msgKey = entry.getKey();
-                            Set<Integer> unreceived_ack = new HashSet<Integer>(Network.socketAddressHashMap.keySet());
+                            Set<Integer> unreceived_ack = new HashSet<>(Network.socketAddressHashMap.keySet());
                             unreceived_ack.removeAll(entry.getValue());
                             if (!unreceived_ack.isEmpty() && unreceived_ack.size() >= Network.networkMajority) {
                                 unreceived_ack.forEach(id -> Pp2pEvents.pp2pSendMessage(datagramSocket, id, msgKey));
@@ -65,14 +76,7 @@ public class UniformReliableBroadcast extends Thread {
                             Collections.sort(entryValue);
                             int currentId = entry.getKey();
                             int msgNumber = receiver.getExpectedMsgNumber(currentId);
-                            for (String message : entryValue){
-                                if (msgNumber == Integer.parseInt(message.split(Constants.MSG)[1])) {
-                                    toDeliver.add(message);
-                                    msgNumber += 1;
-                                } else {
-                                    toRemove.remove(message);
-                                }
-                            }
+                            handleBroadcast(entryValue, msgNumber, toDeliver, toRemove);
                             receiver.setExpectedMsgNumber(currentId, msgNumber);
                         });
                         toDeliver.stream().sorted().parallel()
