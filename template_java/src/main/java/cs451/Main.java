@@ -3,17 +3,13 @@ package cs451;
 import java.io.IOException;
 
 public class Main {
-    private static PerfectLink perfectLink;
 
     private static void handleSignal() {
         //immediately stop network packet processing
         System.out.println("Immediately stopping network packet processing.");
-        perfectLink.stop();
 
         //write/flush output file if necessary
         System.out.println("Writing output.");
-        perfectLink.saveFile();
-        System.out.flush();
     }
 
     private static void initSignalHandlers() {
@@ -31,8 +27,8 @@ public class Main {
 
         initSignalHandlers();
 
-        // example
         long pid = ProcessHandle.current().pid();
+
         System.out.println("My PID: " + pid + "\n");
         System.out.println("From a new terminal type `kill -SIGINT " + pid + "` or `kill -SIGTERM " + pid + "` to stop processing packets\n");
 
@@ -57,11 +53,24 @@ public class Main {
 
         System.out.println("Doing some initialization\n");
 
-        System.out.println("Creating the perfect links...");
-        perfectLink = Service.createLink(parser);
+        int myId = parser.myId();
+        // String outputPath = "../example/output/"+String.format("%2d.output",myId); // for testing
+        String outputPath = "./build/bin/logs/" + String.format("proc%02d.output",myId); // for submission
+        System.out.println("Cleaning...");
+        Utils.cleanFiles(outputPath);
+        System.out.println("Network...");
+        Network networkView = Network.getInstance(parser.hosts(),myId, parser.nbMessages(), outputPath);
+        networkView.execute();
+        while (!networkView.endBroadcasting()){
+            try{
+                Thread.sleep(10);
+            }
+            catch (InterruptedException ex){
+                ex.printStackTrace();
+            }
+        }
 
         System.out.println("Broadcasting and delivering messages...\n");
-        perfectLink.start();
 
         // After a process finishes broadcasting,
         // it waits forever for the delivery of messages.

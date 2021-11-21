@@ -18,14 +18,9 @@ public class Constants {
     // indexes for config
     public static final int CONFIG_VALUE = 6;
 
-    // message constants
-    public static final String REGEX_SOURCE_DESTINATION = "%d:%d";
-    public static final String SEPARATOR_MESSAGE = "&";
-    public static final String REGEX_HEADER = "%d:%s:%d:%d";
-    public static final String REGEX_MESSAGE = "%s&%s";
-    public static final String FORMAT_BROADCAST = "b %d";
-    public static final String FORMAT_DELIVERY = "d %d %d";
-    public static final String SEPARATOR_HEADER = ":";
-    public static final String SEPARATOR_CONFIG = " ";
+    // values for messages
+    public static final String MSG = "ms";
+    public static final String ACK = "ack";
+    public static final String DELIMITER = "-";
 
 }
