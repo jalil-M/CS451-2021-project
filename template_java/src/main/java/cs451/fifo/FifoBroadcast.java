@@ -33,17 +33,6 @@ public class FifoBroadcast extends Thread {
         return singleInstance;
     }
 
-    private void handleBroadcast(List<String> entryValue, int msgNumber, List<String> toDeliver, Set<String> toRemove) {
-        for (String message : entryValue){
-            if (msgNumber == Integer.parseInt(message.split(Constants.MSG)[1])) {
-                toDeliver.add(message);
-                msgNumber += 1;
-            } else {
-                toRemove.remove(message);
-            }
-        }
-    }
-
     /**
      * This method helps us ensure that all messages are received using the ACK system
      */
@@ -76,7 +65,14 @@ public class FifoBroadcast extends Thread {
                             Collections.sort(entryValue);
                             int currentId = entry.getKey();
                             int msgNumber = receiver.getExpectedMsgNumber(currentId);
-                            handleBroadcast(entryValue, msgNumber, toDeliver, toRemove);
+                            for (String message : entryValue){
+                                if (msgNumber == Integer.parseInt(message.split(Constants.MSG)[1])) {
+                                    toDeliver.add(message);
+                                    msgNumber += 1;
+                                } else {
+                                    toRemove.remove(message);
+                                }
+                            }
                             receiver.setExpectedMsgNumber(currentId, msgNumber);
                         });
                         toDeliver.stream().sorted().parallel()
