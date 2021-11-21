@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-class Utils {
+public class Utils {
 
 	private Utils() {
 		throw new IllegalStateException("Utility Class");

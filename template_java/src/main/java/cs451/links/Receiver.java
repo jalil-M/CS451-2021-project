@@ -1,4 +1,6 @@
-package cs451;
+package cs451.links;
+
+import cs451.fifo.Pp2pEvents;
 
 import java.net.*;
 import java.util.HashSet;
@@ -6,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-class Receiver extends Thread {
+public class Receiver extends Thread {
 
     private int id;
     public static Set<String> delivered;

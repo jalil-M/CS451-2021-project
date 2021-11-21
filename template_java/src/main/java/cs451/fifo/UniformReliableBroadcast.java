@@ -1,4 +1,8 @@
-package cs451;
+package cs451.fifo;
+
+import cs451.Constants;
+import cs451.links.Receiver;
+import cs451.links.Sender;
 
 import java.io.IOException;
 import java.net.*;
@@ -10,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-class UniformReliableBroadcast extends Thread {
+public class UniformReliableBroadcast extends Thread {
 
     private int myId;
     private int timeout;

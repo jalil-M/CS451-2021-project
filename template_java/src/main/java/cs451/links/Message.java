@@ -1,5 +1,7 @@
-package cs451;
+package cs451.links;
 
+
+import cs451.Constants;
 
 public class Message{
     private int id;

@@ -1,4 +1,7 @@
-package cs451;
+package cs451.links;
+
+import cs451.fifo.Pp2pEvents;
+import cs451.fifo.UniformReliableBroadcast;
 
 import java.net.*;
 import java.util.HashSet;
@@ -7,7 +10,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.stream.*;
 
-class Sender extends Thread {
+public class Sender extends Thread {
 
     private int id;
     private int msgNumber;

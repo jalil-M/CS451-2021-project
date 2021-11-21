@@ -1,5 +1,7 @@
 package cs451;
 
+import cs451.fifo.Network;
+
 import java.io.IOException;
 
 public class Main {

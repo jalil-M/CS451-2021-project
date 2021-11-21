@@ -1,4 +1,8 @@
-package cs451;
+package cs451.fifo;
+
+import cs451.Host;
+import cs451.links.Receiver;
+import cs451.links.Sender;
 
 import java.util.List;
 import java.util.HashMap;

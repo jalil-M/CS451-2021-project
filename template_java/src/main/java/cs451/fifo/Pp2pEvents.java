@@ -1,10 +1,15 @@
-package cs451;
+package cs451.fifo;
+
+import cs451.Constants;
+import cs451.links.Receiver;
+import cs451.links.Sender;
+import cs451.Utils;
 
 import java.net.*;
 import java.io.IOException;
 import java.util.Map;
 
-class Pp2pEvents {
+public class Pp2pEvents {
 
     private Pp2pEvents() {
         throw new IllegalStateException("Events class");
