@@ -10,8 +10,6 @@ public class Main {
         //immediately stop network packet processing
         System.out.println("Immediately stopping network packet processing.");
 
-
-
         //write/flush output file if necessary
         System.out.println("Writing output.");
     }
@@ -58,8 +56,6 @@ public class Main {
         System.out.println("Doing some initialization\n");
 
         int myId = parser.myId();
-        // String outputPath = "../example/output/"+String.format("%2d.output",myId); // for testing
-        // String outputPath = "./build/bin/logs/" + String.format("proc%02d.output",myId); // for submission
         System.out.println("Cleaning...");
         Utils.cleanFiles(parser.output());
         System.out.println("Network...");
