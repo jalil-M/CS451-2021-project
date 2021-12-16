@@ -1,14 +1,19 @@
 package cs451;
 
-import cs451.fifo.Network;
-
-import java.io.IOException;
+import cs451.Network.AlteredBroadcast;
+import cs451.Utils.Helper;
 
 public class Main {
+
+    private static AlteredBroadcast broadcast;
 
     private static void handleSignal() {
         //immediately stop network packet processing
         System.out.println("Immediately stopping network packet processing.");
+
+        if (broadcast != null) {
+            broadcast.stop();
+        }
 
         //write/flush output file if necessary
         System.out.println("Writing output.");
@@ -23,14 +28,14 @@ public class Main {
         });
     }
 
-    public static void main(String[] args) throws InterruptedException, IOException {
+    public static void main(String[] args) throws InterruptedException {
         Parser parser = new Parser(args);
         parser.parse();
 
         initSignalHandlers();
 
+        // example
         long pid = ProcessHandle.current().pid();
-
         System.out.println("My PID: " + pid + "\n");
         System.out.println("From a new terminal type `kill -SIGINT " + pid + "` or `kill -SIGTERM " + pid + "` to stop processing packets\n");
 
@@ -53,24 +58,8 @@ public class Main {
         System.out.println("===============");
         System.out.println(parser.config() + "\n");
 
-        System.out.println("Doing some initialization\n");
-
-        int myId = parser.myId();
-        System.out.println("Cleaning...");
-        Utils.cleanFiles(parser.output());
-        System.out.println("Network...");
-        Network networkView = Network.getInstance(parser.hosts(),myId, parser.nbMessages(), parser.output());
-        networkView.execute();
-        while (!networkView.endBroadcasting()){
-            try{
-                Thread.sleep(10);
-            }
-            catch (InterruptedException ex){
-                ex.printStackTrace();
-            }
-        }
-
-        System.out.println("Broadcasting and delivering messages...\n");
+        System.out.println("Initialization, Broadcasting and delivering messages...\n");
+        Helper.handleRun(parser, broadcast);
 
         // After a process finishes broadcasting,
         // it waits forever for the delivery of messages.

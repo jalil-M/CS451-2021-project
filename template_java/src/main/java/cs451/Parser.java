@@ -70,9 +70,4 @@ public class Parser {
         return configParser.getPath();
     }
 
-    // method to retrieve the number of messages in total
-    public int nbMessages() {
-        return configParser.getNbMessages();
-    }
-
 }
