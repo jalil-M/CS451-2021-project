@@ -97,17 +97,17 @@ public class CausalManager implements URBDelivery, Broadcast {
         }
     }
 
-    private void handlePendingMessages() {
+    private void handleAwaitingMessages() {
         boolean removed;
         do {
             removed = false;
-            Iterator<AwaitingMessage> pendingMessageIterator = awaitingMessages.iterator();
-            while (pendingMessageIterator.hasNext()) {
-                AwaitingMessage m = pendingMessageIterator.next();
+            Iterator<AwaitingMessage> awaitingMessageIterator = awaitingMessages.iterator();
+            while (awaitingMessageIterator.hasNext()) {
+                AwaitingMessage m = awaitingMessageIterator.next();
                 if (deliveryCheck(m)) {
                     vectorClock[m.basisId - 1]++;
                     broadcastDelivery.deliver(m.basisId, m.data);
-                    pendingMessageIterator.remove();
+                    awaitingMessageIterator.remove();
                     removed = true;
                 }
             }
@@ -125,7 +125,7 @@ public class CausalManager implements URBDelivery, Broadcast {
                     if (deliveryCheck(msg)) {
                         vectorClock[msg.basisId - 1]++;
                         broadcastDelivery.deliver(msg.basisId, msg.data);
-                        handlePendingMessages();
+                        handleAwaitingMessages();
                     } else {
                         awaitingMessages.add(msg);
                     }
